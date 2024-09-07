@@ -20,6 +20,42 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
+parameter line_length = 3;
+
 module delay_line(
-	input challenge,
-	input [line_length - 1 :0]
+	input clk,
+	input [line_length - 1 :0] challenge,
+	output line_out_1,
+	output line_out_2
+);
+
+wire [2 * line_length + 1 : 0] net;
+
+assign net[0] = clk;
+assign net[1] = clk;
+
+generate
+	genvar i;
+	for (i=1; i<= line_length; i = i +1)
+	begin
+		mux inst_mux_1(
+			.in1(net[i * 2 - 2]),
+			.in2(net[i * 2 - 1]),
+			.select(challenge[i-1]),
+			.out_mux(net[i * 2])
+		);
+
+		mux inst_mux_2(
+			.in1(net[i * 2 - 1]),
+			.in2(net[i * 2 - 2]),
+			.select(challenge[i-1]),
+			.out_mux(net[i * 2 + 1])
+		);
+
+	end
+endgenerate
+
+assign line_out_1 = net[line_length * 2];
+assign line_out_2 = net[line_length * 2 + 1];
+
+endmodule
