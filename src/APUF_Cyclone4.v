@@ -20,44 +20,33 @@
 //OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //SOFTWARE.
 
-(* keep_hierarchy = "yes" *)
-module delay_line
+module APUF_Cyclone4
 
 # (parameter line_length = 3)
 
 (
-	input clk,
-	input [line_length - 1 :0] challenge,
-	output line_out_1,
-	output line_out_2
+    input clk,
+    input [line_length - 1 :0] challenge,
+
+    output response
+
 );
 
-(* keep *) wire [2 * line_length + 1 : 0] net;
+wire delay_line_out_1;
+wire delay_line_out_2;
 
-assign net[0] = clk;
-assign net[1] = clk;
 
-genvar i;
-generate
-	for (i=1; i<= line_length; i = i +1) 
-	begin : mux_line
-		mux inst_mux_1(
-			.in1(net[i * 2 - 2]),
-			.in2(net[i * 2 - 1]),
-			.select(challenge[i-1]),
-			.out_mux(net[i * 2])
-		);
+delay_line delay_line(
+    .clk(clk),
+    .challenge(challenge),
+    .line_out_1(delay_line_out_1),
+    .line_out_2(delay_line_out_2)
+);
 
-		mux inst_mux_2(
-			.in1(net[i * 2 - 1]),
-			.in2(net[i * 2 - 2]),
-			.select(challenge[i-1]),
-			.out_mux(net[i * 2 + 1])
-		);
-	end
-endgenerate
-
-assign line_out_1 = net[line_length * 2];
-assign line_out_2 = net[line_length * 2 + 1];
+dff dff(
+    .clk(delay_line_out_2),
+    .d(delay_line_out_1),
+    .q(response)
+);
 
 endmodule

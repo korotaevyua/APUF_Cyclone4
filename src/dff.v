@@ -20,44 +20,15 @@
 //OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //SOFTWARE.
 
-(* keep_hierarchy = "yes" *)
-module delay_line
-
-# (parameter line_length = 3)
-
-(
-	input clk,
-	input [line_length - 1 :0] challenge,
-	output line_out_1,
-	output line_out_2
+module dff (
+    input wire clk,  // Clock signal
+    input wire d,    // Data input
+    output reg q     // Data output
 );
 
-(* keep *) wire [2 * line_length + 1 : 0] net;
-
-assign net[0] = clk;
-assign net[1] = clk;
-
-genvar i;
-generate
-	for (i=1; i<= line_length; i = i +1) 
-	begin : mux_line
-		mux inst_mux_1(
-			.in1(net[i * 2 - 2]),
-			.in2(net[i * 2 - 1]),
-			.select(challenge[i-1]),
-			.out_mux(net[i * 2])
-		);
-
-		mux inst_mux_2(
-			.in1(net[i * 2 - 1]),
-			.in2(net[i * 2 - 2]),
-			.select(challenge[i-1]),
-			.out_mux(net[i * 2 + 1])
-		);
-	end
-endgenerate
-
-assign line_out_1 = net[line_length * 2];
-assign line_out_2 = net[line_length * 2 + 1];
+always @(posedge clk) begin
+    q <= d;          // Store the data input on rising clock edge
+end
 
 endmodule
+
